@@ -1,0 +1,32 @@
+flowchart TD
+    Start([User Access App]) --> Choose{Choose Action}
+    Choose -->|Login| Login[Enter Username/Password]
+    Choose -->|Register| Register[Enter Registration Details]
+    Choose -->|Forgot Password| Forgot[Forgot Password]
+    
+    Login --> ValidateLogin[Validate Credentials]
+    ValidateLogin --> LoginValid{Valid?}
+    LoginValid -->|Yes| MFA[Multi-Factor Authentication]
+    LoginValid -->|No| LoginError[Show Login Error]
+    LoginError --> Login
+    
+    MFA --> MFAValid{MFA Code Valid?}
+    MFAValid -->|Yes| Success[Authentication Successful]
+    MFAValid -->|No| MFAError[Show MFA Error]
+    MFAError --> MFA
+    
+    Register --> CheckUser{User Exists?}
+    CheckUser -->|Yes| RegError[Show Registration Error]
+    CheckUser -->|No| CreateAccount[Create Account]
+    CreateAccount --> RegSuccess[Registration Successful]
+    RegError --> Register
+    RegSuccess --> Choose
+    
+    Forgot --> EnterEmail[Enter Email]
+    EnterEmail --> SendReset[Send Reset Link]
+    SendReset --> ResetSuccess[Check Email for Link]
+    ResetSuccess --> ResetPassword[Reset Password]
+    ResetPassword --> Success
+    
+    Success --> Dashboard[Redirect to Dashboard]
+    Dashboard --> End([End])

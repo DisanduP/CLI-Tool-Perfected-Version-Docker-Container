@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  diagram-converter:
+    build: .
+    volumes:
+      - .:/data
+    working_dir: /data
+    stdin_open: true
+    tty: true

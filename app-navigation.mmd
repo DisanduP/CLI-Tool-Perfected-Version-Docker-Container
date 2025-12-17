@@ -1,0 +1,12 @@
+flowchart TD
+    Start([App Launch]) --> Home[Home Screen]
+    Home --> Profile[Navigate to Profile]
+    Home --> Settings[Navigate to Settings]
+    Profile --> EditProfile[Edit Profile Screen]
+    Profile --> BackHome[Back to Home]
+    Settings --> Account[Account Settings Screen]
+    Settings --> BackHome2[Back to Home]
+    EditProfile --> Save[Save Changes]
+    Save --> Profile
+    Account --> Logout[Logout Screen]
+    Logout --> End([Exit App])

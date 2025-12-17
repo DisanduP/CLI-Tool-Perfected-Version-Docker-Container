@@ -1,0 +1,188 @@
+flowchart TD
+    Start([User Accesses Application]) --> AuthCheck{Currently Authenticated?}
+
+    AuthCheck -->|Yes| ValidSession{Valid Session?}
+    AuthCheck -->|No| AuthOptions[Show Authentication Options]
+
+    ValidSession -->|Yes| GrantAccess[Grant Access to Application]
+    ValidSession -->|No| AuthOptions
+
+    AuthOptions --> Login[Login Option]
+    AuthOptions --> Register[Register Option]
+    AuthOptions --> ForgotPassword[Forgot Password Option]
+
+    Login --> EnterCredentials[Enter Username/Email & Password]
+    EnterCredentials --> ValidateInput{Input Valid?}
+
+    ValidateInput -->|No| ShowInputError[Show Input Validation Error]
+    ValidateInput -->|Yes| CheckAccount{Account Exists?}
+
+    ShowInputError --> EnterCredentials
+
+    CheckAccount -->|No| AccountNotFound[Account Not Found Error]
+    CheckAccount -->|Yes| VerifyPassword{Password Correct?}
+
+    AccountNotFound --> Login
+
+    VerifyPassword -->|No| FailedLogin[Failed Login Attempt]
+    VerifyPassword -->|Yes| AccountStatus{Account Status}
+
+    FailedLogin --> IncrementAttempts[Increment Failed Attempts]
+    IncrementAttempts --> MaxAttempts{Max Attempts Reached?}
+
+    MaxAttempts -->|No| ShowLoginError[Show Login Error]
+    MaxAttempts -->|Yes| LockAccount[Lock Account Temporarily]
+
+    ShowLoginError --> Login
+    LockAccount --> SendLockNotification[Send Account Lock Notification]
+    SendLockNotification --> Login
+
+    AccountStatus --> Active{Active?}
+    AccountStatus --> Suspended[Suspended]
+    AccountStatus --> PendingVerification[Pending Email Verification]
+
+    Active -->|Yes| MFA_Enabled{MFA Enabled?}
+    Suspended --> ShowSuspendedError[Show Account Suspended Error]
+    PendingVerification --> ShowVerificationError[Show Email Verification Required]
+
+    ShowSuspendedError --> EndSuspended([Access Denied])
+    ShowVerificationError --> ResendVerification[Resend Verification Email]
+    ResendVerification --> AuthOptions
+
+    MFA_Enabled -->|Yes| MFA_Challenge[Send MFA Challenge]
+    MFA_Enabled -->|No| CreateSession[Create User Session]
+
+    MFA_Challenge --> MFA_Method{MFA Method}
+    MFA_Method --> SMS[SMS Code]
+    MFA_Method --> App[Authenticator App]
+    MFA_Method --> Email[Email Code]
+
+    SMS --> EnterSMSCode[Enter SMS Code]
+    App --> EnterAppCode[Enter App Code]
+    Email --> EnterEmailCode[Enter Email Code]
+
+    EnterSMSCode --> VerifySMSCode{SMS Code Valid?}
+    EnterAppCode --> VerifyAppCode{App Code Valid?}
+    EnterEmailCode --> VerifyEmailCode{Email Code Valid?}
+
+    VerifySMSCode -->|No| InvalidSMS[Invalid SMS Code]
+    VerifyAppCode -->|No| InvalidApp[Invalid App Code]
+    VerifyEmailCode -->|No| InvalidEmail[Invalid Email Code]
+
+    InvalidSMS --> MFA_Challenge
+    InvalidApp --> MFA_Challenge
+    InvalidEmail --> MFA_Challenge
+
+    VerifySMSCode -->|Yes| CreateSession
+    VerifyAppCode -->|Yes| CreateSession
+    VerifyEmailCode -->|Yes| CreateSession
+
+    CreateSession --> SetSessionCookie[Set Session Cookie/Token]
+    SetSessionCookie --> UpdateLastLogin[Update Last Login Time]
+    UpdateLastLogin --> GrantAccess
+
+    Register --> EnterRegDetails[Enter Registration Details]
+    EnterRegDetails --> ValidateRegInput{Registration Input Valid?}
+
+    ValidateRegInput -->|No| ShowRegError[Show Registration Error]
+    ValidateRegInput -->|Yes| CheckEmailUnique{Email Unique?}
+
+    ShowRegError --> EnterRegDetails
+
+    CheckEmailUnique -->|No| EmailExistsError[Email Already Exists]
+    CheckEmailUnique -->|Yes| CheckUsernameUnique{Username Unique?}
+
+    EmailExistsError --> Register
+
+    CheckUsernameUnique -->|No| UsernameExistsError[Username Already Exists]
+    CheckUsernameUnique -->|Yes| CreateAccount[Create User Account]
+
+    UsernameExistsError --> Register
+
+    CreateAccount --> SendVerificationEmail[Send Email Verification]
+    SendVerificationEmail --> ShowVerificationSent[Show Verification Email Sent]
+
+    ShowVerificationSent --> VerifyEmail{Email Verified?}
+    VerifyEmail -->|No| VerificationTimeout{Verification Timeout?}
+
+    VerificationTimeout -->|No| WaitVerification[Wait for Verification]
+    VerificationTimeout -->|Yes| DeletePendingAccount[Delete Pending Account]
+
+    WaitVerification --> VerifyEmail
+    DeletePendingAccount --> Register
+
+    VerifyEmail -->|Yes| AccountActivated[Account Activated]
+    AccountActivated --> SetInitialPassword[Set Initial Password]
+    SetInitialPassword --> Login
+
+    ForgotPassword --> EnterResetEmail[Enter Email for Password Reset]
+    EnterResetEmail --> ValidateResetEmail{Valid Email Format?}
+
+    ValidateResetEmail -->|No| ShowResetError[Show Reset Email Error]
+    ValidateResetEmail -->|Yes| CheckResetEmail{Email Exists in System?}
+
+    ShowResetError --> EnterResetEmail
+
+    CheckResetEmail -->|No| EmailNotFound[Email Not Found]
+    CheckResetEmail -->|Yes| GenerateResetToken[Generate Password Reset Token]
+
+    EmailNotFound --> ForgotPassword
+
+    GenerateResetToken --> SendResetEmail[Send Password Reset Email]
+    SendResetEmail --> ShowResetSent[Show Reset Email Sent]
+
+    ShowResetSent --> ResetLinkClicked{Reset Link Clicked?}
+    ResetLinkClicked -->|No| ResetTimeout{Reset Link Timeout?}
+
+    ResetTimeout -->|No| WaitReset[Wait for Reset Link Click]
+    ResetTimeout -->|Yes| ExpireResetToken[Expire Reset Token]
+
+    WaitReset --> ResetLinkClicked
+    ExpireResetToken --> ForgotPassword
+
+    ResetLinkClicked -->|Yes| EnterNewPassword[Enter New Password]
+    EnterNewPassword --> ValidateNewPassword{New Password Valid?}
+
+    ValidateNewPassword -->|No| ShowPasswordError[Show Password Validation Error]
+    ValidateNewPassword -->|Yes| UpdatePassword[Update Password in Database]
+
+    ShowPasswordError --> EnterNewPassword
+
+    UpdatePassword --> InvalidateResetToken[Invalidate Reset Token]
+    InvalidateResetToken --> SendPasswordChanged[Send Password Changed Notification]
+    SendPasswordChanged --> ShowPasswordReset[Show Password Reset Successful]
+    ShowPasswordReset --> Login
+
+    GrantAccess --> UserActivity[User Activity in Application]
+    UserActivity --> SessionExpiry{Session Expired?}
+
+    SessionExpiry -->|No| UserActivity
+    SessionExpiry -->|Yes| AutoLogout[Automatic Logout]
+
+    AutoLogout --> ClearSession[Clear Session Data]
+    ClearSession --> RedirectToLogin[Redirect to Login Page]
+
+    UserActivity --> ManualLogout{Manual Logout?}
+    ManualLogout -->|Yes| ClearSession
+    ManualLogout -->|No| UserActivity
+
+    UserActivity --> SecurityEvent{Security Event Detected?}
+    SecurityEvent -->|Yes| SecurityResponse[Security Response]
+    SecurityEvent -->|No| UserActivity
+
+    SecurityResponse --> LogSecurityEvent[Log Security Event]
+    LogSecurityEvent --> AssessRisk[Assess Security Risk]
+
+    AssessRisk --> LowRisk[Low Risk]
+    AssessRisk --> MediumRisk[Medium Risk]
+    AssessRisk --> HighRisk[High Risk]
+
+    LowRisk --> ContinueSession[Continue Session with Warning]
+    MediumRisk --> ForceReauth[Force Re-authentication]
+    HighRisk --> ImmediateLogout[Immediate Logout & Lock]
+
+    ContinueSession --> UserActivity
+    ForceReauth --> MFA_Challenge
+    ImmediateLogout --> LockAccount
+
+    GrantAccess --> EndAuthenticated([User Authenticated & Active])

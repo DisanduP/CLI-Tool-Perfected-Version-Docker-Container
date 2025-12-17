@@ -1,0 +1,29 @@
+flowchart TD
+    Start([Start]) --> Choose{Choose Action}
+    Choose -->|Login| Login[Enter Username/Password]
+    Choose -->|Register| Register[Enter New User Details]
+    Choose -->|Forgot Password| Reset[Enter Email for Reset]
+    
+    Login --> ValidateLogin[Validate Credentials]
+    ValidateLogin --> LoginCheck{Valid?}
+    LoginCheck -->|Yes| MFA[Multi-Factor Authentication]
+    LoginCheck -->|No| LoginError[Show Login Error]
+    LoginError --> Choose
+    
+    MFA --> MFACheck{MFA Code Valid?}
+    MFACheck -->|Yes| Success[Authentication Successful]
+    MFACheck -->|No| MFAError[Show MFA Error]
+    MFAError --> MFA
+    
+    Register --> CheckUser{User Exists?}
+    CheckUser -->|Yes| RegError[Show Registration Error]
+    CheckUser -->|No| CreateUser[Create User Account]
+    CreateUser --> RegSuccess[Registration Successful]
+    RegError --> Choose
+    RegSuccess --> Choose
+    
+    Reset --> SendReset[Send Reset Email]
+    SendReset --> ResetSuccess[Check Email for Reset Link]
+    ResetSuccess --> End([End])
+    
+    Success --> End
